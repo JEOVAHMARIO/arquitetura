@@ -1,0 +1,109 @@
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: #f4f4f4;
+    margin: 0;
+    padding: 0;
+}
+
+.container {
+    max-width: 800px;
+    margin: 20px auto;
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+nav {
+    background-color: #333;
+    color: #fff;
+    padding: 10px;
+    margin-bottom: 20px;
+    position: fixed;
+    width: 100%;
+    top: 0;
+    z-index: 1000;
+}
+
+nav ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+nav ul li {
+    display: inline;
+    margin-right: 20px;
+}
+
+nav a {
+    color: #fff;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+h1 {
+    color: #333;
+}
+
+p {
+    line-height: 1.5;
+}
+
+button {
+    background-color: #4caf50;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+    border-radius: 4px;
+}
+
+button:hover {
+    background-color: #45a049;
+}
+
+/* public/styles.css */
+
+body.erro {
+    background-color: #ffcccc;
+}
+
+body.sucesso {
+    background-color: #ccffcc;
+}
+
+body.pequeno {
+    background-color: #ccffcc; /* Verde para suporte pequeno */
+}
+
+body.especial {
+    background-color: #ffffcc; /* Amarelo para suporte especial */
+}
+
+.autor-img {
+    display: block; /* Garante que cada imagem fique em uma linha separada */
+    margin-bottom: 20px; /* Adiciona um espaçamento abaixo de cada imagem */
+    max-width: 200px; /* Define a largura máxima da imagem */
+}
+
+.informacoes,
+.experiencia {
+    float: left;
+    max-width: 400px;
+    margin-left: 20px;
+}
+
+.autor-images {
+    float: left;
+}
+
+.autor-texto {
+    float: left;
+    max-width: 400px;
+    margin-left: 20px;
+}
+
+.sobre-texto {
+    overflow: hidden; /* Evita que o texto ultrapasse a imagem flutuante */
+}

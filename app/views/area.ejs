@@ -1,0 +1,46 @@
+<!-- public/views/area.ejs -->
+
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="/styles.css">
+    <style>
+        .resultado {
+            text-align: center;
+            margin: 50px auto;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body class="<%= isErro ? 'erro' : 'sucesso' %> <%= area < 20 ? 'pequeno' : 'especial' %>">
+    <%- include ('cabecalho.ejs') %>
+
+    <div class="resultado">
+        <% if (isErro) { %>
+            <h1>Erro no Cálculo</h1>
+            <p>Comprimento do lado inválido. Certifique-se de fornecer um número válido.</p>
+        <% } else { %>
+            <h1>Resultado do Cálculo</h1>
+            <p>Nome do Suporte: <%= nome %></p>
+            <p>Lado: <%= lado %> metros</p>
+            <p>Área: <%= area.toFixed(2) %> metros quadrados</p>
+            <% if (area < 20) { %>
+                <p>É um suporte pequeno.</p>
+            <% } else { %>
+                <p>É um suporte especial.</p>
+            <% } %>
+            <p><strong>Explicação da Fórmula:</strong></p>
+            <p>A fórmula para calcular a área de um suporte octogonal é a seguinte:</p>
+            <p>Área = 2 * (1 + √2) * lado^2</p>
+            <p>Onde:</p>
+            <p>"Área" é a área do suporte octogonal.</p>
+            <p>"lado" é o comprimento de um dos lados do suporte.</p>
+            <p>"√2" representa a raiz quadrada de 2.</p>
+            <h1>Desenvolvido por Jeovah</h1>
+        <% } %>
+    </div>
+</body>
+</html>

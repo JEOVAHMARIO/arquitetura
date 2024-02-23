@@ -1,0 +1,29 @@
+<!-- public/views/index.ejs -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Área do Suporte</title>
+    <link rel="stylesheet" href="/styles.css"> <!-- Atualizado o caminho do CSS -->
+</head>
+<body>
+    <%- include ('cabecalho.ejs') %>
+    <div class="container">
+        <img src="/_img/logo.png" alt="Logo">
+        <h1>Arquitetura: Cálculo da Área de um Suporte Octogonal!</h1>
+        <p>Determine a área de um suporte octogonal. Se a área for menor que 20 metros quadrados, é um suporte pequeno. Se estiver fora desse intervalo, é um suporte especial.</p>
+        <form action="/area" method="post">
+            <label>
+                <span>Nome</span>
+                <input name="nome" type="text">
+            </label>
+            <label>
+                <span>Lado</span>
+                <input name="lado" type="text">
+            </label>
+            <button type="submit">Ok</button>
+        </form>
+    </div>
+</body>
+</html>
