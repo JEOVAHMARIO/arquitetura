@@ -74,17 +74,17 @@ body.sucesso {
 }
 
 body.pequeno {
-    background-color: #ccffcc; /* Verde para suporte pequeno */
+    background-color: #ccffcc;
 }
 
 body.especial {
-    background-color: #ffffcc; /* Amarelo para suporte especial */
+    background-color: #ffffcc;
 }
 
 .autor-img {
-    display: block; /* Garante que cada imagem fique em uma linha separada */
-    margin-bottom: 20px; /* Adiciona um espaçamento abaixo de cada imagem */
-    max-width: 200px; /* Define a largura máxima da imagem */
+    display: block;
+    margin-bottom: 20px;
+    max-width: 200px; 
 }
 
 .informacoes,
@@ -105,5 +105,5 @@ body.especial {
 }
 
 .sobre-texto {
-    overflow: hidden; /* Evita que o texto ultrapasse a imagem flutuante */
+    overflow: hidden; 
 }
