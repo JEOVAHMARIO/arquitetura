@@ -1,81 +1,67 @@
 const express = require('express');
 const app = express();
 const bodyParser = require('body-parser');
+const Sequelize = require('sequelize');
+
+const SuporteSequelizeDao = require('./lib/suporte/SuporteSequelizeDao');
+const SuporteController = require('./controllers/SuporteController');
+const AutorController = require('./controllers/AutorController');
+const SuporteDao = require('./lib/suporte/SuporteDao');
 
 const PORT = 3000;
 
-// Middleware para registrar data, hora e rota de cada solicitação
+const sequelize = new Sequelize(
+  process.env.MARIADB_DATABASE,
+  'root',
+  process.env.MARIADB_PASSWORD,
+  {
+    host: 'bd',
+    dialect: 'mysql'
+  }
+);
+
+app.set('view engine', 'ejs');
+
+let suporteDao = new SuporteSequelizeDao(sequelize);
+let suporteController = new SuporteController(suporteDao);
+let autorController = new AutorController();
+
+app.use(express.static('public'))
+app.use(express.urlencoded({ extended: false }));
+
 app.use((req, res, next) => {
   const currentDate = new Date().toLocaleDateString();
   const currentTime = new Date().toLocaleTimeString();
   const requestInfo = `${currentDate} ${currentTime} - Rota: ${req.path}`;
-  
+
   console.log(requestInfo);
 
-  // Chame next() para passar para o próximo middleware ou rota
   next();
 });
 
-// Configuração do EJS e Body Parser
-app.set('view engine', 'ejs');
 app.set('views', __dirname + '/views');
 app.use(bodyParser.urlencoded({ extended: true }));
 
-// Configuração para servir arquivos estáticos da pasta 'public'
-app.use(express.static('public'));
+app.use('/suportes', suporteController.getRouter());
 
-// Rota para processar o formulário e renderizar area.ejs
-app.post('/area', (req, res) => {
-    const nome = req.body.nome;
-    const lado = parseFloat(req.body.lado);
-  
-    let isErro = false;
-    let area = 0;
-    let explanation = '';
-  
-    if (!isNaN(lado) && lado > 0) {
-      area = 2 * Math.pow(lado, 2) * (1 + Math.sqrt(2));
-      explanation = 'explicação personalizada aqui';
-    } else {
-      isErro = true; // Definir isErro como verdadeiro se o lado for inválido
-    }
-  
-    res.render('area', { isErro, nome, lado, area, explanation });
+app.use((req, res, next) => {
+  res.locals.dadosPersonalizados = { chave: 'valor' };
+  console.log('middleware 0')
+  next();
 });
 
-// Rota para renderizar o resultado da área mesmo sem enviar o formulário
-app.get('/area', (req, res) => {
-    // Você pode definir valores padrão ou deixar em branco
-    res.render('area', { isErro: false, nome: '', lado: 0, area: 0, explanation: '' });
+app.get([
+  '/',
+  '/index'
+  ], (req, res) => {
+      console.log('custom', req.dadosPersonalizados); 
+      suporteController.index(req, res)
 });
 
+app.get('/index', (req, res) => res.render('index'));
+app.post('/suportes', (req, res) => suporteController.area(req, res));
+app.get('/sobre', (req, res) => autorController.autor(req, res));
 
-// Rota para renderizar o index.ejs
-app.get('/index', (req, res) => {
-  res.render('index');
-});
-
-// Rota para renderizar o sobre.ejs
-app.get('/sobre', (req, res) => {
-  res.render('sobre', {
-    autor: {
-      nome: 'Jeovah Mário',
-      formacoes: ['Tecnico em Informática', 'Cursando Administração'],
-      experienciaProfissional: [
-        { cargo: 'Auxiliar de Manutenção', departamento: 'IFCE', ano: 2020 },
-        { cargo: 'Auxiliar Administrativo', departamento: 'ENEL', ano: 2021 }
-      ]
-    }
-  });
-});
-
-// Middleware para lidar com rotas não encontradas
-app.use((req, res) => {
-    res.status(404).render('error404', { url: req.originalUrl });
-  });
-  
-
-// Inicia o servidor na porta especificada
 app.listen(PORT, () => {
   console.log(`Servidor iniciado na porta ${PORT}`);
 });

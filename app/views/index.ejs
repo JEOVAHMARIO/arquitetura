@@ -4,8 +4,17 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <script src="/_js/suporte.js"></script>
+    <style>
+        .pequeno {
+            color: green;
+        }
+        .especial {
+            color: red;
+        }
+    </style>
     <title>Área do Suporte</title>
-    <link rel="stylesheet" href="/styles.css"> <!-- Atualizado o caminho do CSS -->
+    <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
     <%- include ('cabecalho.ejs') %>
@@ -13,17 +22,52 @@
         <img src="/_img/logo.png" alt="Logo">
         <h1>Arquitetura: Cálculo da Área de um Suporte Octogonal!</h1>
         <p>Determine a área de um suporte octogonal. Se a área for menor que 20 metros quadrados, é um suporte pequeno. Se estiver fora desse intervalo, é um suporte especial.</p>
-        <form action="/area" method="post">
+        
+        <div id="resposta"></div>
+        
+        <form method="post" onsubmit="event.preventDefault(); area();">
             <label>
                 <span>Nome</span>
-                <input name="nome" type="text">
+                <input name="nome">
             </label>
             <label>
                 <span>Lado</span>
-                <input name="lado" type="text">
+                <input name="lado">
+            </label>
+            <label>
+                <span>ID papel</span>
+                <input name="id_papel" type="number">
+            </label>
+            <label>
+                <span>Senha</span>
+                <input name="senha" type="password">
             </label>
             <button type="submit">Ok</button>
         </form>
+        <button onclick="listar();">Listar</button>
+        <table>
+            <tr>
+                <th>ID</th>
+                <th>Nome</th>
+                <th>Lado</th>
+                <th>Senha</th>
+                <th>Papel</th>
+                <th>Ações</th> 
+            </tr>
+            <tbody id="octogonais">
+                <tr>
+                    <td>1</td>
+                    <td>Ada</td>
+                    <td>4</td>
+                    <td>********</td> 
+                    <td>Papel</td> 
+                    <td>
+                        <button onclick="editar(1);">Editar</button>
+                        <button onclick="apagar(1);">Apagar</button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>        
     </div>
 </body>
 </html>
