@@ -1,6 +1,7 @@
 // public/_js/suporte.js
 
 async function area() {
+    console.log('teste');
     try {
         let inputNome = document.querySelector('[name=nome]');
         let nome = inputNome.value;
@@ -10,7 +11,7 @@ async function area() {
         let idPapel = parseFloat(inputIdPapel.value);
         let inputSenha = document.querySelector('[name=senha]');
         let senha = inputSenha.value;
-
+        console.log('teste');
         let octogonal = { nome, lado, id_papel: idPapel, senha };
 
         if (idPapel === 0) {
@@ -21,6 +22,7 @@ async function area() {
 
         await listar();
     } catch (error) {
+        console.log('teste');
         console.error('Erro ao processar área:', error);
     }
 }

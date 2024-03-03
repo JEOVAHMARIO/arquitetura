@@ -78,11 +78,16 @@ class SuporteSequelizeDao {
             throw new Error('mensagem_lado_invalido');
         }
     }
-    
 
-    autenticar(nome, senha) {
-        return new Promise((resolve, reject) => {
-        });
+    async autenticar(nome, senha) {
+        let octogonal = await this.Octogonal.findOne({ where: { nome } });
+
+        if (octogonal && octogonal.senha && bcrypt.compareSync(senha, octogonal.senha)) {
+            return octogonal;
+        }
+
+        // Retorna null se o usuário não for encontrado ou as senhas não coincidirem
+        return octogonal;
     }
 }
 

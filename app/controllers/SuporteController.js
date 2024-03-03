@@ -1,6 +1,5 @@
 const utils = require('../lib/utils');
 const express = require('express');
-const SuporteSequelizeDao = require('../lib/suporte/SuporteSequelizeDao');
 
 class SuporteController {
     constructor(suporteDao) {
@@ -21,9 +20,10 @@ class SuporteController {
             await this.apagar(req, res);
         });
 
-        rotas.post('/', async (req, res) => {
-            await this.inserir(req, res);
+        rotas.post('/', async (req, res, next) => {
+            await this.inserir(req, res, next);
         });
+
         return rotas;
     }
 
@@ -34,12 +34,12 @@ class SuporteController {
     async area(req, res) {
         try {
             const { nome, lado } = req.body;
-    
+
             const octogonal = await this.suporteDao.inserir({
                 nome,
                 lado: parseFloat(lado),
             });
-    
+
             res.json({
                 octogonal: {
                     ...octogonal.dataValues,
@@ -52,34 +52,32 @@ class SuporteController {
             res.status(400).json({ mensagem: 'Erro ao processar área.' });
         }
     }
-    
+
     async listar(req, res) {
         try {
             let octogonais = await this.suporteDao.listar();
-            let dados = octogonais.map(octogonal => {
-                return {
-                    ...octogonal.dataValues, 
-                    area: octogonal.calcularArea(),
-                };
-            });
-    
+            let dados = octogonais.map(octogonal => ({
+                ...octogonal.dataValues,
+                area: octogonal.calcularArea(),
+            }));
+
             res.json(dados);
         } catch (error) {
-            res.json({
-                mensagem: `Erro ao listar octogonais: ${error.message}`
-            }, 500);
+            res.status(500).json({
+                mensagem: `Erro ao listar octogonais: ${error.message}`,
+            });
         }
     }
 
-    async inserir(req, res) {
+    async inserir(req, res, next) {
         try {
             const { nome, lado } = req.body;
-    
+
             const octogonal = await this.suporteDao.inserir({
                 nome,
                 lado: parseFloat(lado),
             });
-    
+
             res.json({
                 octogonal: {
                     ...octogonal.dataValues,
@@ -90,6 +88,8 @@ class SuporteController {
         } catch (error) {
             console.error('Erro ao inserir octogonal:', error);
             res.status(400).json({ mensagem: 'Erro ao inserir octogonal.' });
+            // Se você estiver usando middleware de erro global, você pode remover o next()
+            // next(error);
         }
     }
 
@@ -97,12 +97,12 @@ class SuporteController {
         try {
             const { id } = req.params;
             const { nome, lado } = req.body;
-    
-            const octogonal = await this.suporteDao.alterar(id, {
+
+            await this.suporteDao.alterar(id, {
                 nome,
                 lado: parseFloat(lado),
             });
-    
+
             res.json({ mensagem: 'mensagem_suporte_alterado' });
         } catch (error) {
             console.error('Erro ao alterar octogonal:', error);
@@ -113,9 +113,9 @@ class SuporteController {
     async apagar(req, res) {
         try {
             const { id } = req.params;
-    
+
             await this.suporteDao.apagar(id);
-    
+
             res.json({ mensagem: 'mensagem_suporte_apagado', id });
         } catch (error) {
             console.error('Erro ao apagar octogonal:', error);
