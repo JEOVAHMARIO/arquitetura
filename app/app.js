@@ -6,6 +6,11 @@ const passport = require('passport');
 
 const JwtStrategy = require('passport-jwt').Strategy,
     ExtractJwt = require('passport-jwt').ExtractJwt;
+const { MongoClient } = require("mongodb");
+
+const uri = `mongodb://${process.env.MONGO_INITDB_ROOT_USERNAME}:${process.env.
+MONGO_INITDB_ROOT_PASSWORD}@mongo`;   
+const mongoClient = new MongoClient(uri);
 
 let opts = {}
 opts.jwtFromRequest = ExtractJwt.fromAuthHeaderAsBearerToken();
@@ -15,7 +20,7 @@ passport.use(new JwtStrategy(opts, function(jwt_payload, done) {
     return done(null, jwt_payload);
 }));
 
-const SuporteSequelizeDao = require('./lib/suporte/SuporteSequelizeDao');
+const SuporteMongoDao = require('./lib/suporte/SuporteMongoDao');
 const SuporteController = require('./controllers/SuporteController');
 const AutorController = require('./controllers/AutorController');
 const AuthController = require('./controllers/AuthController');
@@ -23,19 +28,9 @@ const SuporteDao = require('./lib/suporte/SuporteDao');
 
 const PORT = 3000;
 
-const sequelize = new Sequelize(
-  process.env.MARIADB_DATABASE,
-  'root',
-  process.env.MARIADB_PASSWORD,
-  {
-    host: 'bd',
-    dialect: 'mysql'
-  }
-);
-
 app.set('view engine', 'ejs');
 
-let suporteDao = new SuporteSequelizeDao(sequelize);
+let suporteDao = new SuporteMongoDao(mongoClient);
 let suporteController = new SuporteController(suporteDao);
 let autorController = new AutorController();
 let authController = new AuthController(suporteDao);
@@ -86,6 +81,11 @@ app.get('/login', (req, res) => {
 
 app.post('/logar', (req, res) => {
   authController.logar(req, res);
+});
+
+app.get('/lista', async (req, res) => {
+  let suportes = await suporteDao.listar();
+  res.render('lista', {suportes});
 });
 
 app.get('*', (req, res, next) => {

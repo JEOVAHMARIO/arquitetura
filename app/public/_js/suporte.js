@@ -1,7 +1,7 @@
 // public/_js/suporte.js
 
-async function area() {
-    console.log('teste');
+async function calcularArea() {
+    console.log('teste1');
     try {
         let inputNome = document.querySelector('[name=nome]');
         let nome = inputNome.value;
@@ -11,28 +11,29 @@ async function area() {
         let idPapel = parseFloat(inputIdPapel.value);
         let inputSenha = document.querySelector('[name=senha]');
         let senha = inputSenha.value;
-        console.log('teste');
-        let octogonal = { nome, lado, id_papel: idPapel, senha };
 
-        if (idPapel === 0) {
-            await inserir(octogonal);
+        let suporte = { nome, lado, id_papel: idPapel, senha };
+
+        if (idPapel === 0 || isNaN(idPapel)) {
+            await inserir(suporte);
         } else {
-            await editar(octogonal, idPapel);
+            await editar(suporte, idPapel); 
         }
 
-        await listar();
+        exibirDadosFormulario(nome, lado, idPapel, senha);
     } catch (error) {
-        console.log('teste');
         console.error('Erro ao processar área:', error);
     }
 }
 
-async function inserir(octogonal) {
-    try {
-        let divResposta = document.querySelector('#mensagem');
-        let dados = new URLSearchParams(octogonal);
 
-        let resposta = await fetch('/area', {
+async function inserir(suporte) {
+    try {
+        let divResposta = await getOrCreateMensagemDiv();
+
+        let dados = new URLSearchParams(suporte);
+
+        let resposta = await fetch('/suportes', {
             method: 'post',
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded'
@@ -52,7 +53,62 @@ async function inserir(octogonal) {
         let mensagem = respostaJson.mensagem;
         divResposta.innerText = traducoes['pt-BR'][mensagem];
     } catch (error) {
-        console.error('Erro ao inserir:', error);
+        console.error('Erro ao inserir suporte:', error);
+    }
+}
+
+function exibirDadosFormulario(nome, lado, idPapel, senha) {
+    let dadosFormularioDiv = document.querySelector('#dadosFormulario');
+    dadosFormularioDiv.innerHTML = `<p>Dados do Formulário:</p>
+                                    <ul>
+                                        <li><strong>Nome:</strong> ${nome}</li>
+                                        <li><strong>Lado:</strong> ${lado}</li>
+                                        <li><strong>ID Papel:</strong> ${idPapel}</li>
+                                        <li><strong>Senha:</strong> ${senha}</li>
+                                    </ul>`;
+}
+
+async function getOrCreateMensagemDiv() {
+    await new Promise(resolve => document.addEventListener('DOMContentLoaded', resolve));
+
+    let divResposta = document.querySelector('#mensagem');
+
+    if (!divResposta) {
+        divResposta = document.createElement('div');
+        divResposta.id = 'mensagem';
+        document.body.appendChild(divResposta);
+    }
+
+    return divResposta;
+}
+
+async function editar(octogonal, id) {
+    try {
+        let divResposta = await getOrCreateMensagemDiv();
+
+        let dados = new URLSearchParams(octogonal);
+
+        let resposta = await fetch('/suportes/' + id, {
+            method: 'put',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: dados
+        });
+
+        if (resposta.status === 200) {
+            divResposta.classList.add('pequeno');
+            divResposta.classList.remove('especial');
+        } else {
+            divResposta.classList.add('especial');
+            divResposta.classList.remove('pequeno');
+        }
+
+        let respostaJson = await resposta.json();
+        let mensagem = respostaJson.mensagem;
+        divResposta.innerText = traducoes['pt-BR'][mensagem];
+    } catch (error) {
+        console.error('Erro ao editar octogonal:', error);
     }
 }
 
@@ -99,42 +155,15 @@ async function listar() {
         }
     } catch (error) {
         console.error('Erro ao listar:', error);
+        divOctogonais.innerText = 'Erro ao obter a lista de suportes';
     }
 }
 
-async function editar(octogonal, id) {
-    try {
-        let divResposta = document.querySelector('#mensagem');
-        let dados = new URLSearchParams(octogonal);
-
-        let resposta = await fetch('/suportes/' + id, {
-            method: 'put',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded'
-            },
-            body: dados
-        });
-
-        if (resposta.status === 200) {
-            divResposta.classList.add('pequeno');
-            divResposta.classList.remove('especial');
-        } else {
-            divResposta.classList.add('especial');
-            divResposta.classList.remove('pequeno');
-        }
-
-        let respostaJson = await resposta.json();
-        let mensagem = respostaJson.mensagem;
-        divResposta.innerText = traducoes['pt-BR'][mensagem];
-    } catch (error) {
-        console.error('Erro ao editar octogonal:', error);
-    }
-}
 
 async function apagar(id) {
     try {
-        let divResposta = document.querySelector('#mensagem');
-        if (confirm('Quer apagar o #' + id + '?')) {
+        let divResposta = await getOrCreateMensagemDiv();
+        if (confirm('Quer apagar o suporte #' + id + '?')) {
             let resposta = await fetch('/suportes/' + id, {
                 method: 'delete',
             });
@@ -146,6 +175,6 @@ async function apagar(id) {
             await listar();
         }
     } catch (error) {
-        console.error('Erro ao apagar octogonal:', error);
+        console.error('Erro ao apagar suporte:', error);
     }
 }

@@ -41,9 +41,9 @@ class SuporteController {
             });
 
             res.json({
-                octogonal: {
-                    ...octogonal.dataValues,
-                    area: octogonal.calcularArea(),
+                suporte: {
+                    ...suporte.dataValues,
+                    area: suporte.area(),
                 },
                 mensagem: 'mensagem_suporte_cadastrado',
             });
@@ -55,39 +55,47 @@ class SuporteController {
 
     async listar(req, res) {
         try {
-            let octogonais = await this.suporteDao.listar();
-            let dados = octogonais.map(octogonal => ({
-                ...octogonal.dataValues,
-                area: octogonal.calcularArea(),
+            console.log('Entrando na função listar');
+            let suportes = await this.suporteDao.listar();
+            console.log('Suportes:', suportes);
+    
+            // Converta os suportes para o formato esperado antes de enviar como resposta
+            let dados = suportes.map(suporte => ({
+                id: suporte._id, // ou utilize suporte.id dependendo do que está no seu modelo
+                nome: suporte.nome,
+                lado: suporte.lado,
+                // outras propriedades, se necessário
             }));
-
+    
             res.json(dados);
         } catch (error) {
-            res.status(500).json({
-                mensagem: `Erro ao listar octogonais: ${error.message}`,
-            });
+            console.error(error);
+            res.status(500).json({ mensagem: 'Erro ao listar suportes' });
         }
     }
-
+    
+    
+    
+    
     async inserir(req, res, next) {
         try {
             const { nome, lado } = req.body;
 
-            const octogonal = await this.suporteDao.inserir({
+            const suporte = await this.suporteDao.inserir({
                 nome,
                 lado: parseFloat(lado),
             });
 
             res.json({
-                octogonal: {
-                    ...octogonal.dataValues,
-                    area: octogonal.calcularArea(),
+                suporte: {
+                    ...suporte.dataValues,
+                    area: suporte.area(),
                 },
                 mensagem: 'mensagem_suporte_cadastrado',
             });
         } catch (error) {
-            console.error('Erro ao inserir octogonal:', error);
-            res.status(400).json({ mensagem: 'Erro ao inserir octogonal.' });
+            console.error('Erro ao inserir suporte:', error);
+            res.status(400).json({ mensagem: 'Erro ao inserir suporte.' });
             // Se você estiver usando middleware de erro global, você pode remover o next()
             // next(error);
         }
@@ -105,8 +113,8 @@ class SuporteController {
 
             res.json({ mensagem: 'mensagem_suporte_alterado' });
         } catch (error) {
-            console.error('Erro ao alterar octogonal:', error);
-            res.status(400).json({ mensagem: 'Erro ao alterar octogonal.' });
+            console.error('Erro ao alterar suporte:', error);
+            res.status(400).json({ mensagem: 'Erro ao alterar suporte.' });
         }
     }
 
@@ -118,8 +126,8 @@ class SuporteController {
 
             res.json({ mensagem: 'mensagem_suporte_apagado', id });
         } catch (error) {
-            console.error('Erro ao apagar octogonal:', error);
-            res.status(400).json({ mensagem: 'Erro ao apagar octogonal.' });
+            console.error('Erro ao apagar suporte:', error);
+            res.status(400).json({ mensagem: 'Erro ao apagar suporte.' });
         }
     }
 }
