@@ -19,6 +19,7 @@
 
     <meta charset="UTF-8">
     <script src="https://unpkg.com/vue@3"></script>
+    <title>Área do Suporte</title>
     <style>
         .pequeno {
             color: green;
@@ -32,7 +33,6 @@
             border: 1px solid #ccc;
         }
     </style>
-    <title>Área do Suporte</title>
     <link rel="stylesheet" href="/styles.css">
 </head>
 <body id="app">
@@ -41,25 +41,37 @@
         <img src="/_img/logo.png" alt="Logo">
         <h1>Arquitetura: Cálculo da Área de um Suporte Octogonal!</h1>
         <p>Determine a área de um suporte octogonal. Se a área for menor que 20 metros quadrados, é um suporte pequeno. Se estiver fora desse intervalo, é um suporte especial.</p>
-        <crud-suportes :nomes="lista" @selecionado="seleciona"></crud-suportes>
+        <crud-suportes :nomes="lista" v-if="mostrarCrudSuportes" @selecionado="seleciona"></crud-suportes>
+        <cartas-suportes :nomes="lista" v-if="mostrarCartasSuportes" @selecionado="seleciona"></cartas-suportes>
+        <exibe-suportes :nomes="lista" v-if="mostrarExibeSuportes" @selecionado="seleciona"></exibe-suportes>
+        <detalhes-suportes :nomes="lista" v-if="mostrarDetalhesSuportes" @selecionado="seleciona"></detalhes-suportes>
+    </div>
     <script type="module">
-        import CrudSuportes from './_js/Crud.Suportes.js'
+        import CrudSuportes from './_js/CrudSuportes.js'
+        import CartasSuportes from './_js/CartasSuportes.js'
+        import ExibeSuportes from './_js/ExibeSuportes.js'
+        import DetalhesSuportes from './_js/DetalhesSuportes.js'
 
         const app = Vue.createApp({
             components: {
-                CrudSuportes
+                CrudSuportes,
+                CartasSuportes,
+                ExibeSuportes,
+                DetalhesSuportes
             },
             data() {
-                const lista = Vue.ref([]);
-                const nome = Vue.ref(null);
-                function seleciona(evento) {
-                    nome.value = evento;
-                }
                 return {
-                    lista,
-                    nome,
-                    seleciona
+                    lista: [],
+                    mostrarCrudSuportes: true, 
+                    mostrarCartasSuportes: false, 
+                    mostrarExibeSuportes: false, 
+                    mostrarDetalhesSuportes: false 
                 };
+            },
+            methods: {
+                seleciona(evento) {
+                    this.nome = evento;
+                }
             }
         });
 
