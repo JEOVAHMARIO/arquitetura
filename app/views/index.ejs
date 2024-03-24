@@ -18,7 +18,7 @@
     </script>
 
     <meta charset="UTF-8">
-    <script src="https://unpkg.com/vue@3"></script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="https://unpkg.com/vue-router@4.0.15/dist/vue-router.global.js"></script>
     <title>Área do Suporte</title>
     <style>
@@ -50,6 +50,8 @@
         <main>
             <router-view />
         </main>
+    </body>
+    </html>
     </div>
     <script type="module">
         import CrudSuportes from './_js/CrudSuportes.js'
@@ -60,7 +62,7 @@
         import Autor from './_js/Autor.js'
         import Detalhes from './_js/Detalhes.js'
 
-        let suportes = Vue.ref([{nome: 'Beto', id: 1}]);
+        let suportes = Vue.ref(await listar());
         const routes = [
             { path: '/', component: ListSuportes, props: {
                 suportes
@@ -101,5 +103,4 @@
         app.use(router);
         app.mount('#app');
     </script>
-</body>
-</html>
+    <script src="/_js/SuportesStore.js"></script>

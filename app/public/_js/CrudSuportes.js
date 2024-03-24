@@ -1,24 +1,36 @@
 export default {
     props: {
         suportes: Array,
+        nome2: String
     },
     setup(props, { emit }) {
         const nome = Vue.ref('');
         const suportes = Vue.ref(props.suportes || []);
 
         function inserir() {
-            suportes.value.push({ id: suportes.value.length + 1, nome: nome.value });
+            //suportes.value.push({ id: suportes.value.length + 1, nome: nome.value });
+            (async () => {
+                let id = await adicionar({nome: nome.value, lado: 2})
+                alert('Registro #' + id + ' adicionado!')
+
+            })()
         }
 
         function selecionar(suporte) {
             emit('selecionado', suporte);
+        }
+        async function apagar(id) {
+            if (confirm('Quer apagar o #' + id + '?')) {
+                console.log('apagado', await deletar(id));
+            }
         }
 
         return {
             nome,
             suportes,
             inserir,
-            selecionar
+            selecionar,
+            apagar,
         };
     },
     template: `
@@ -56,8 +68,8 @@ export default {
                     <td>{{ suporte.nome }}</td>
                     <td>4</td>
                     <td>
-                        <button @click="editar(1);">Editar</button>
-                        <button @click="apagar(1);">Apagar</button>
+                        <button @onclick="editar(suporte.id);">Editar</button>
+                        <button @click="apagar(suporte.id);">Apagar</button>
                         <button @click="selecionar(suporte);">Selecionar</button>
                     </td>
                 </tr>
