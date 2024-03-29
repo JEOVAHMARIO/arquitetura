@@ -4,53 +4,60 @@ export default {
         nome2: String
     },
     setup(props, { emit }) {
-        const nome = Vue.ref('');
+        const suporte = Vue.ref({ nome: '', lado: '' });
         const suportes = Vue.ref(props.suportes || []);
 
-        function inserir() {
-            //suportes.value.push({ id: suportes.value.length + 1, nome: nome.value });
-            (async () => {
-                let id = await adicionar({nome: nome.value, lado: 2})
-                alert('Registro #' + id + ' adicionado!')
-
-            })()
+        async function inserir() {
+            let id;
+            const existingIndex = suportes.value.findIndex(item => item.nome === suporte.value.nome && item.lado === suporte.value.lado);
+            if (existingIndex !== -1) {
+                id = suportes.value[existingIndex].id;
+                await editar(id); 
+                alert('Registro #' + id + ' editado!');
+            } else {
+                id = await adicionar({ nome: suporte.value.nome, lado: suporte.value.lado });
+                alert('Registro #' + id + ' adicionado!');
+                suportes.value.push({ id, ...suporte.value }); 
+            }
+            suporte.value = { nome: '', lado: '' };
         }
+        
 
         function selecionar(suporte) {
             emit('selecionado', suporte);
         }
+
+        async function editar(suporte1) {
+            suporte.value = suporte1;
+        }
+
         async function apagar(id) {
             if (confirm('Quer apagar o #' + id + '?')) {
-                console.log('apagado', await deletar(id));
+                await deletar(id);
+                suportes.value = suportes.value.filter(item => item.id !== id);
+                alert('Registro #' + id + ' apagado!');
             }
         }
 
         return {
-            nome,
+            suporte,
             suportes,
             inserir,
             selecionar,
+            editar,
             apagar,
         };
     },
     template: `
     <div class="card-container">
-        <form method="post" @submit.prevent="inserir">
+        <form @submit.prevent="inserir">
             <label>
                 <span>Nome</span>
-                <input name="nome" v-model="nome">
+                <input name="nome" v-model="suporte.nome">
             </label>
             <label>
                 <span>Lado</span>
-                <input name="lado" v-model="lado">
-            </label>
-            <label>
-                <span>ID papel</span>
-                <input name="id_papel" type="number" v-model="idPapel">
-            </label>
-            <label>
-                <span>Senha</span>
-                <input name="senha" type="password" v-model="senha">
+                <input name="lado" v-model="suporte.lado">
             </label>
             <button type="submit">Ok</button>
         </form>
@@ -62,15 +69,15 @@ export default {
                 <th>Lado</th>
                 <th></th>
             </tr>
-            <tbody id="suportes">
-                <tr v-for="suporte of suportes">
+            <tbody>
+                <tr v-for="suporte in suportes" :key="suporte.id">
                     <td>{{ suporte.id }}</td>
                     <td>{{ suporte.nome }}</td>
-                    <td>4</td>
+                    <td>{{ suporte.lado }}</td>
                     <td>
-                        <button @onclick="editar(suporte.id);">Editar</button>
-                        <button @click="apagar(suporte.id);">Apagar</button>
-                        <button @click="selecionar(suporte);">Selecionar</button>
+                        <button @click="editar(suporte)">Editar</button>
+                        <button @click="apagar(suporte.id)">Apagar</button>
+                        <button @click="selecionar(suporte)">Selecionar</button>
                     </td>
                 </tr>
             </tbody>

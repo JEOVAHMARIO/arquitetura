@@ -59,12 +59,10 @@ class SuporteController {
             let suportes = await this.suporteDao.listar();
             console.log('Suportes:', suportes);
     
-            // Converta os suportes para o formato esperado antes de enviar como resposta
             let dados = suportes.map(suporte => ({
-                id: suporte._id, // ou utilize suporte.id dependendo do que está no seu modelo
+                id: suporte._id, 
                 nome: suporte.nome,
                 lado: suporte.lado,
-                // outras propriedades, se necessário
             }));
     
             res.json(dados);
@@ -96,7 +94,6 @@ class SuporteController {
         } catch (error) {
             console.error('Erro ao inserir suporte:', error);
             res.status(400).json({ mensagem: 'Erro ao inserir suporte.' });
-            // Se você estiver usando middleware de erro global, você pode remover o next()
             // next(error);
         }
     }
@@ -130,6 +127,17 @@ class SuporteController {
             res.status(400).json({ mensagem: 'Erro ao apagar suporte.' });
         }
     }
+    async getSuporteDaRequisicao(req) {
+        let corpo = req.body;
+        let suporte = Suporte.build({
+            nome: corpo.nome,
+            lado: parseFloat(corpo.lado),
+            senha: corpo.senha,
+            papel: corpo.id_papel
+        });
+        return suporte;
+    }
+
 }
 
 module.exports = SuporteController;

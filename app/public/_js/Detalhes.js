@@ -14,5 +14,6 @@ export default {
     <h2>Detalhes</h2>
     {{suporte.id}}
     {{suporte.nome}}
+    {{suporte.lado}}
     `
 }
