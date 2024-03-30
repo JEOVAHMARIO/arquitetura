@@ -1,9 +1,9 @@
-const utils = require('../lib/utils');
 const express = require('express');
 
 class SuporteController {
     constructor(suporteDao) {
         this.suporteDao = suporteDao;
+        this.inserir = this.inserir.bind(this);
     }
 
     getRouter() {
@@ -24,6 +24,10 @@ class SuporteController {
             await this.inserir(req, res, next);
         });
 
+        rotas.get('/:id', async (req, res) => {
+            await this.procurarPorId(req, res);
+        });
+
         return rotas;
     }
 
@@ -35,7 +39,7 @@ class SuporteController {
         try {
             const { nome, lado } = req.body;
 
-            const octogonal = await this.suporteDao.inserir({
+            const suporte = await this.suporteDao.inserir({
                 nome,
                 lado: parseFloat(lado),
             });
@@ -72,30 +76,41 @@ class SuporteController {
         }
     }
     
-    
-    
+    async procurarPorId(req, res) {
+        try {
+            let id = req.params.id;
+            let suporte = await this.suporteDao.procurarPorId(id);
+            
+            if (!suporte) {
+                res.status(404).json({ mensagem: 'Suporte não encontrado.' });
+                return;
+            }
+
+            res.json(suporte);
+        } catch (error) {
+            console.error('Erro ao procurar suporte por ID:', error);
+            res.status(500).json({ mensagem: 'Erro ao procurar suporte por ID.' });
+        }
+    }
     
     async inserir(req, res, next) {
+        console.log("inserir0")
         try {
-            const { nome, lado } = req.body;
-
-            const suporte = await this.suporteDao.inserir({
-                nome,
-                lado: parseFloat(lado),
-            });
-
+            let suporte = await this.getSuporteDaRequisicao(req);
+            console.log("inserir", suporte)
+            suporte.id = await this.suporteDao.inserir(suporte);
             res.json({
                 suporte: {
-                    ...suporte.dataValues,
-                    area: suporte.area(),
+                    ...suporte,
+                    // area: suporte.area(),
                 },
-                mensagem: 'mensagem_suporte_cadastrado',
+                mensagem: 'mensagem_suporte_cadastrado'
             });
-        } catch (error) {
-            console.error('Erro ao inserir suporte:', error);
-            res.status(400).json({ mensagem: 'Erro ao inserir suporte.' });
-            // next(error);
+        } catch (e) {
+            console.log("erro inserir", e)
+            next(e);
         }
+        console.log("inserir2")
     }
 
     async alterar(req, res) {
@@ -127,14 +142,15 @@ class SuporteController {
             res.status(400).json({ mensagem: 'Erro ao apagar suporte.' });
         }
     }
+
     async getSuporteDaRequisicao(req) {
         let corpo = req.body;
-        let suporte = Suporte.build({
+
+        let suporte = {
             nome: corpo.nome,
-            lado: parseFloat(corpo.lado),
-            senha: corpo.senha,
-            papel: corpo.id_papel
-        });
+            lado: parseFloat(corpo.lado)
+        };
+        
         return suporte;
     }
 

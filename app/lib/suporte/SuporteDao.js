@@ -1,4 +1,4 @@
-const Octogonal = require("./Octogonal");
+const Suporte = require("./Suporte");
 const bcrypt = require('bcrypt');
 
 class SuporteDao {
@@ -10,34 +10,34 @@ class SuporteDao {
         return this.octogonais;
     }
 
-    inserir(octogonal) {
-        this.validar(octogonal);
-        octogonal.senha = bcrypt.hashSync(octogonal.senha, 10);
-        this.octogonais.push(octogonal);
+    inserir(suporte) {
+        this.validar(suporte);
+        suporte.senha = bcrypt.hashSync(suporte.senha, 10);
+        this.octogonais.push(suporte);
     }
 
-    alterar(id, octogonal) {
-        this.validar(octogonal);
-        this.octogonais[id] = octogonal;
+    alterar(id, suporte) {
+        this.validar(suporte);
+        this.octogonais[id] = suporte;
     }
 
     apagar(id) {
         this.octogonais.splice(id, 1);
     }
 
-    validar(octogonal) {
-        if (octogonal.nome === '') {
+    validar(suporte) {
+        if (suporte.nome === '') {
             throw new Error('mensagem_nome_em_branco');
         }
-        if (octogonal.lado < 0) {
+        if (suporte.lado < 0) {
             throw new Error('mensagem_tamanho_invalido');
         }
     }
 
     autenticar(nome, senha) {
-        for (let octogonal of this.listar()) {
-            if (octogonal.nome === nome && bcrypt.compareSync(senha, octogonal.senha)) {
-                return octogonal;
+        for (let suporte of this.listar()) {
+            if (suporte.nome === nome && bcrypt.compareSync(senha, suporte.senha)) {
+                return suporte;
             }
         }
         return null;

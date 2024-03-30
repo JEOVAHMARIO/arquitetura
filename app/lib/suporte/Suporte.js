@@ -1,14 +1,9 @@
-const { Sequelize, DataTypes, Model } = require('sequelize');
-
-class Octogonal extends Model {
-    /*constructor(nome, lado, senha, papel, id) {
+class Suporte {
+    constructor(nome, lado, id) {
         this.nome = nome;
         this.lado = parseFloat(lado);
-        this.senha = senha;
-        this.papel = papel;
-        this.area();
-        this.id = id
-    }*/
+        this.id = id;
+    }
 
     calcularArea() {
         if (!isNaN(this.lado) && this.lado >= 0) {
@@ -25,8 +20,8 @@ class Octogonal extends Model {
 
     setLado(lado) {
         this.lado = parseFloat(lado);
-        this.area();
+        this.calcularArea();
     }
 }
 
-module.exports = Octogonal;
+module.exports = Suporte;

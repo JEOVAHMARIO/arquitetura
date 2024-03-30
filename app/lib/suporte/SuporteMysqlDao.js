@@ -1,4 +1,4 @@
-const Octogonal = require("./Octogonal");
+const Suporte = require("./Suporte");
 const bcrypt = require('bcrypt');
 
 class SuporteMysqlDao {
@@ -15,13 +15,31 @@ class SuporteMysqlDao {
     
                 let octogonais = linhas.map(linha => {
                     let { id, nome, lado, papel } = linha;
-                    return new Octogonal(id, nome, lado, papel); // Corrigi a ordem dos parâmetros
+                    return new Octogonal(id, nome, lado, papel);
                 });
     
                 resolve(octogonais);
             });
         });
     }    
+
+    procurarPorId(id) {
+        return new Promise((resolve, reject) => {
+            this.pool.query('SELECT o.id, o.nome, o.lado, p.nome as papel FROM octogonais o JOIN papeis p ON o.id_papel = p.id WHERE e.id=?',
+            [id], function (error, linhas, fields) {
+                if (error) {
+                    return reject('Erro: ' + error.message);
+                }
+    
+                let octogonais = linhas.map(linha => {
+                    let { id, nome, lado, papel } = linha;
+                    return new Octogonal(id, nome, lado, papel); 
+                });
+    
+                resolve(octogonais[0]);
+            });
+        });
+    }
 
     inserir(octogonal) {
         this.validar(octogonal);
@@ -63,7 +81,6 @@ class SuporteMysqlDao {
                 if (error) {
                     return reject('Erro: ' + error.message);
                 }
-                // Corrigi o tratamento do resultado da alteração
                 if (resultado.affectedRows > 0) {
                     resolve(new Octogonal(id, octogonal.nome, octogonal.lado, octogonal.papel));
                 } else {

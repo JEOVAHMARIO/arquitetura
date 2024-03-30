@@ -7,21 +7,13 @@ export default {
         const suporte = Vue.ref({ nome: '', lado: '' });
         const suportes = Vue.ref(props.suportes || []);
 
-        async function inserir() {
-            let id;
-            const existingIndex = suportes.value.findIndex(item => item.nome === suporte.value.nome && item.lado === suporte.value.lado);
-            if (existingIndex !== -1) {
-                id = suportes.value[existingIndex].id;
-                await editar(id); 
-                alert('Registro #' + id + ' editado!');
-            } else {
-                id = await adicionar({ nome: suporte.value.nome, lado: suporte.value.lado });
-                alert('Registro #' + id + ' adicionado!');
-                suportes.value.push({ id, ...suporte.value }); 
-            }
-            suporte.value = { nome: '', lado: '' };
+        function inserir() {
+            //suportes.value.push({id: suportes.value.length + 1, nome: nome.value});
+            (async () => {
+                let id = await adicionar({nome: suporte.value.nome, lado: suporte.value.lado})
+                alert('Registro #' + id + ' adicionado!')
+            })()
         }
-        
 
         function selecionar(suporte) {
             emit('selecionado', suporte);

@@ -21,24 +21,29 @@
 </body>
 <script>
     async function login() {
-        let nome = document.querySelector('[name=nome]').value;
-        let senha = document.querySelector('[name=senha]').value;
-        let divResposta = document.querySelector('#resposta');
-        
-        let dados = new URLSearchParams({nome, senha});
+    let nome = document.querySelector('[name=nome]').value;
+    let senha = document.querySelector('[name=senha]').value;
+    let divResposta = document.querySelector('#resposta');
+
+    let dados = new URLSearchParams({ nome, senha });
+    try {
         let resposta = await fetch('logar', {
             method: 'post',
             body: dados
         });
         let json = await resposta.json();
         console.log(json);
-        if (resposta.status == 200) {
+        if (resposta.ok) {
             sessionStorage.setItem('token', json.token);
-            window.location = '/index';
-        }
-        else {
+            window.location.href = '/index';
+        } else {
             divResposta.innerText = json.mensagem;
         }
+    } catch (error) {
+        console.error('Erro ao enviar a solicitação:', error);
+        divResposta.innerText = 'Erro ao enviar a solicitação.';
     }
+}
+
 </script>
 </html>

@@ -1,4 +1,5 @@
 const { MongoClient, ObjectId } = require('mongodb');
+const Suporte = require('./Suporte');
 const bcrypt = require('bcrypt');
 
 class SuporteMongoDao {
@@ -24,79 +25,72 @@ class SuporteMongoDao {
         return suportes;
     }
 
-    async inserir(octogonal) {
-        this.validar(octogonal);
-
-        octogonal.senha = bcrypt.hashSync(octogonal.senha, 10);
-        
-        await this.conectar();
-        const collection = this.db.collection(this.colecao);
-
-        const resultado = await collection.insertOne(octogonal);
-        return resultado.insertedId;
+    async procurarPorId(id) {
+        await this.client.connect();
+        const database = this.client.db(this.banco);
+        const collection = database.collection(this.colecao);
+    
+        const suporte = await collection.findOne({_id: new ObjectId(id)});
+        return suporte;   
     }
 
-    async alterar(id, octogonal) {
-        this.validar(octogonal);
+    async inserir(suporte) {
+        this.validar(suporte);
+        
+        await this.client.connect();
+        const database = this.client.db(this.banco);
+        const collection = database.collection(this.colecao);
+    
+        return await collection.insertOne(suporte);
+    }
+
+    async alterar(id, suporte) {
+        this.validar(suporte);
 
         await this.conectar();
         const collection = this.db.collection(this.colecao);
 
         const resultado = await collection.updateOne(
             { _id: new ObjectId(id) },
-            { $set: { nome: octogonal.nome, lado: octogonal.lado } }
+            { $set: { nome: suporte.nome, lado: suporte.lado } }
         );
 
         if (resultado.matchedCount > 0) {
-            return new Octogonal(id, octogonal.nome, octogonal.lado, octogonal.papel);
+            return new suporte(id, suporte.nome, suporte.lado, suporte.papel);
         } else {
             return null;
         }
     }
 
     async apagar(id) {
-        try {
-            await this.conectar();
-            const collection = this.db.collection(this.colecao);
-            const objectId = new ObjectId(id);
-
-            const result = await collection.deleteOne({ _id: objectId });
-
-            if (result.deletedCount > 0) {
-                console.log(`Suporte removido com sucesso: ${id}`);
-                return true;
-            } else {
-                console.log(`Nenhum suporte foi removido: ${id}`);
-                return false;
-            }
-        } catch (error) {
-            console.error('Erro ao apagar suporte:', error);
-            return false;
-        }
+        await this.client.connect();
+        const database = this.client.db(this.banco);
+        const collection = database.collection(this.colecao);
+    
+        const suporte = await collection.deleteOne({_id: new ObjectId(id)});
+        return suporte;
     }
 
-    validar(octogonal) {
-        if (!octogonal.nome) {
+    validar(suporte) {
+        if (!suporte.nome) {
             throw new Error('mensagem_nome_em_branco');
         }
-        if (octogonal.lado < 0) {
-            throw new Error('Lado do octogonal não pode ser menor que 0');
+        if (suporte.lado < 0) {
+            throw new Error('Lado do suporte não pode ser menor que 0');
         }
     }
     
     async autenticar(nome, senha) {
-        await this.conectar();
-        const collection = this.db.collection(this.colecao);
-
+        await this.client.connect();
+        const database = this.client.db(this.banco);
+        const collection = database.collection(this.colecao);
+    
         const suporte = await collection.findOne({ nome });
-
-        if (suporte && bcrypt.compareSync(senha, suporte.senha)) {
-            const { _id, nome, lado, papel } = suporte;
-            return new Octogonal(_id, nome, lado, papel);
+        if (suporte && suporte.nome === nome) {
+            return new Suporte(suporte.nome, suporte.lado, suporte._id);
         }
-
         return null;
-    }
+    }    
 }
 
 module.exports = SuporteMongoDao;

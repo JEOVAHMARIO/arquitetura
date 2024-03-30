@@ -81,26 +81,44 @@
             routes,
         });
 
-        const app = Vue.createApp({
-            data() {
-                return {
-                    lista: [],
-                    mostrarCrudSuportes: true, 
-                    mostrarCartasSuportes: false, 
-                    mostrarExibeSuportes: false, 
-                    mostrarDetalhesSuportes: false,
-                    mostrarListSuportes: true,
-                    mostrarAutor: true 
-                };
-            },
-            methods: {
-                seleciona(evento) {
-                    this.nome = evento;
-                }
-            }
-        });
+        async function listar() {
+    try {
+        let resposta = await fetch('/suportes');
+        let suportes = await resposta.json();
+        return suportes;
+    } catch (error) {
+        console.error('Erro ao listar suportes:', error);
+        throw error;
+    }
+}
 
-        app.use(router);
-        app.mount('#app');
+const app = Vue.createApp({
+    data() {
+        return {
+            lista: [],
+            mostrarCrudSuportes: true, 
+            mostrarCartasSuportes: false, 
+            mostrarExibeSuportes: false, 
+            mostrarDetalhesSuportes: false,
+            mostrarListSuportes: true,
+            mostrarAutor: true 
+        };
+    },
+    methods: {
+        seleciona(evento) {
+            this.nome = evento;
+        }
+    },
+    async mounted() {
+        try {
+            this.lista = await listar();
+        } catch (error) {
+            console.error('Erro ao carregar lista de suportes:', error);
+        }
+    }
+});
+
+app.use(router);
+app.mount('#app');
     </script>
-    <script src="/_js/SuportesStore.js"></script>
+    <script src="/_js/SuportesStoreAPI.js"></script>
