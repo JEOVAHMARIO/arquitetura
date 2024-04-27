@@ -3,100 +3,123 @@ const utils = require('../lib/utils');
 
 class UsuariosController {
     constructor(usuariosDao) {
-        this.usuariosDao = usuariosDao;
-    }
-    index(req, res) {
-        utils.renderizarEjs(res, './views/index.ejs');
+        this.usuariosDao = usuariosDao;      
     }
 
-    async calcularArea(req, res){               
-        let corpoTexto ='';
-        req.on('data', function (pedaco) {
-            corpoTexto += pedaco;
+    getRouter() {
+        const rotas = express.Router();
+        rotas.get('/', async (req, res) => {
+            this.listar(req, res);
+            let usuarios = await this.listar(req,res);
+            res.render('usuarios', {usuarios: usuarios});        
         });
-        req.on('end', () => {
-            let propriedades = corpoTexto.split('&');
-            let query = {};
-            for (let propriedade of propriedades) {
-                let [variavel, valor] = propriedade.split('=');
-                query[variavel] = valor;
-            }
-            let octogonal = new Octogonal();
-            Octogonal.nome = query.nome;
-            octogonal.lado = parseFloat(query.lado);
-                       
-            utils.renderizarEjs(res, './views/area.ejs', octogonal);
+
+        rotas.delete('/:id', (req, res) => {
+            this.apagar(req, res);
         })
+
+        rotas.get('/cadastro', (req, res) => {
+            res.render('cadastroUsuarios',{usuario:{}})
+        })
+
+        rotas.post('/cadastro', async (req, res) => {
+            this.inserir(req, res);
+         
+        })
+
+        rotas.get('/edicao', async (req, res) => {
+            this.listar(req, res);
+            let usuarios = await this.listar(req,res);
+            res.render('edicaoUsuarios',{usuarios:usuarios})
+        })
+
+        rotas.get('/cadastro/:id', async (req, res) => {
+            let id = req.params.id;
+            let usuario = await this.getUser(id);
+            res.render('cadastroUsuarios',{usuario:usuario})
+        })
+
+        rotas.put('/cadastro/:id', (req, res) => {
+            this.alterar(req, res);
+        })
+
+        rotas.get('/exclusao', async (req, res) => {
+            this.listar(req, res);
+            let usuarios = await this.listar(req,res);
+            res.render('exclusaoUsuarios',{usuarios:usuarios})
+        })
+
+        return rotas;
     }
 
-    listar(req, res) {
-        let usuarios = this.usuariosDao.listar();
+    async getUser(id){
+        let usuario = await Usuario.findOne({
+            raw: true,
+            where: {
+            id: (id),
+            },   
+        });
+        return usuario;
+    }
 
+    async listar(req, res) {
+        let usuarios = await this.usuariosDao.listar();
         let dados = usuarios.map(usuario => {
             return {
-                ...usuario
+                ...usuario.dataValues
             };
         })
-
-        utils.renderizarJSON(res, dados);
+        return dados;
     }
     
     async inserir(req, res) {
-        let usuario = await this.getUsuarioDaRequisicao(req);
         try {
-            this.usuariosDao.inserir(usuario);
-            utils.renderizarJSON(res, {
-                usuario: {
-                    ...usuario
-                },
-                mensagem: 'mensagem_usuario_cadastrado'
-            });
+            let usuario = await this.getUsuarioDaRequisicao(req);
+            usuario.id = await this.usuariosDao.inserir(usuario);
+            this.listar(req, res);
+            let usuarios = await this.listar(req,res);
+            res.render('usuarios', {usuarios: usuarios});
         } catch (e) {
-            utils.renderizarJSON(res, {
+            console.log("erro inserir", e)
+            res.status(400).json({
                 mensagem: e.message
-            }, 400);
+            });
         }
+
     }
 
     async alterar(req, res) {
-        let usuario = await this.getUsuariosDaRequisicao(req);
-        let [ url, queryString ] = req.url.split('?');
-        let urlList = url.split('/');
-        url = urlList[1];
-        let id = urlList[2];
+        let usuario = await this.getUsuarioDaRequisicao(req);
+        let id = req.params.id;
         try {
-            this.usuariosDao.alterar(id, usuario);
-            utils.renderizarJSON(res, {
-                mensagem: 'mensagem_usuario_alterado'
-            });
+            await this.usuariosDao.alterar(id, usuario);
+            res.send('Ok')
         } catch (e) {
-            utils.renderizarJSON(res, {
+            res.status(400).json({
                 mensagem: e.message
-            }, 400);
+            });
         }
     }
     
     apagar(req, res) {
-        let [ url, queryString ] = req.url.split('?');
-        let urlList = url.split('/');
-        url = urlList[1];
-        let id = urlList[2];
+        let id = req.params.id;
         this.usuariosDao.apagar(id);
-        utils.renderizarJSON(res, {
+        res.json({
             mensagem: 'mensagem_usuario_apagado',
             id: id
         });
     }
 
     async getUsuarioDaRequisicao(req) {
-        let corpo = await utils.getCorpo(req);
-        let usuario = new Usuario(
-            corpo.nome,
-            corpo.senha,
-            corpo.papel
-        );
+        let corpo = req.body;
+        let usuario = Usuario.build({
+            nome: corpo.nome,
+            senha: corpo.senha,
+            papel: corpo.papel
+        });
         return usuario;
     }
+
 }
 
 module.exports = UsuariosController;
