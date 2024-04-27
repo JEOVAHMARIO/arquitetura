@@ -24,11 +24,11 @@ class Octogonal extends Model {
 class SuporteSequelizeDao {
     constructor(sequelize) {
         this.sequelize = sequelize;
-        this.Octogonal = Octogonal.init(this.sequelize);
+        this.Suporte = Suporte.init(this.sequelize);
 
         (async () => {
             try {
-                await this.Octogonal.sync();
+                await this.Suporte.sync();
                 console.log('Tabela criada com sucesso!');
             } catch (error) {
                 console.error('Erro ao criar tabela:', error);
@@ -37,57 +37,56 @@ class SuporteSequelizeDao {
     }
 
     async listar() {
-        return this.Octogonal.findAll();
+        return this.Suporte.findAll();
     }
 
-    async inserir(octogonal) {
-        this.validar(octogonal);
-        octogonal.senha = bcrypt.hashSync(octogonal.senha, 10);
+    async inserir(suporte) {
+        this.validar(suporte);
+        suporte.senha = bcrypt.hashSync(suporte.senha, 10);
 
-        return this.Octogonal.create(octogonal);
+        return this.Suporte.create(suporte);
     }
 
-    async alterar(id, octogonal) {
-        this.validar(octogonal, true);
-        if (!octogonal) {
-            throw new Error('Objeto octogonal é nulo ou indefinido');
+    async alterar(id, suporte) {
+        this.validar(suporte, true);
+        if (!suporte) {
+            throw new Error('Objeto suporte é nulo ou indefinido');
         }
 
-        let obj = { ...octogonal.dataValues };
+        let obj = { ...suporte.dataValues };
         Object.keys(obj).forEach(key => {
             if (obj[key] === null || obj[key] === undefined) {
                 delete obj[key];
             }
         });
 
-        await this.Octogonal.update(obj, { where: { id: id } });
+        await this.Suporte.update(obj, { where: { id: id } });
     }
 
     async apagar(id) {
-        return this.Octogonal.destroy({ where: { id: id } });
+        return this.Suporte.destroy({ where: { id: id } });
     }
 
-    validar(octogonal, permitirSenhaEmBranco = false) {
-        if (!octogonal.nome) {
+    validar(suporte, permitirSenhaEmBranco = false) {
+        if (!suporte.nome) {
             throw new Error('mensagem_nome_em_branco');
         }
-        if (!permitirSenhaEmBranco && !octogonal.senha) {
+        if (!permitirSenhaEmBranco && !suporte.senha) {
             throw new Error('mensagem_senha_em_branco');
         }
-        if (octogonal.lado < 0) {
+        if (suporte.lado < 0) {
             throw new Error('mensagem_lado_invalido');
         }
     }
 
     async autenticar(nome, senha) {
-        let octogonal = await this.Octogonal.findOne({ where: { nome } });
+        let suporte = await this.Suporte.findOne({ where: { nome } });
 
-        if (octogonal && octogonal.senha && bcrypt.compareSync(senha, octogonal.senha)) {
-            return octogonal;
+        if (suporte && suporte.senha && bcrypt.compareSync(senha, suporte.senha)) {
+            return suporte;
         }
 
-        // Retorna null se o usuário não for encontrado ou as senhas não coincidirem
-        return octogonal;
+        return suporte;
     }
 }
 

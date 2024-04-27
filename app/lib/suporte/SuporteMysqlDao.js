@@ -8,60 +8,60 @@ class SuporteMysqlDao {
     
     listar() {
         return new Promise((resolve, reject) => {
-            this.pool.query('SELECT o.id, o.nome, o.lado, p.nome as papel FROM octogonais o JOIN papeis p ON o.id_papel = p.id', function (error, linhas, fields) {
+            this.pool.query('SELECT o.id, o.nome, o.lado, p.nome as papel FROM suportes o JOIN papeis p ON o.id_papel = p.id', function (error, linhas, fields) {
                 if (error) {
                     return reject('Erro: ' + error.message);
                 }
     
-                let octogonais = linhas.map(linha => {
+                let suportes = linhas.map(linha => {
                     let { id, nome, lado, papel } = linha;
-                    return new Octogonal(id, nome, lado, papel);
+                    return new Suporte(id, nome, lado, papel);
                 });
     
-                resolve(octogonais);
+                resolve(suportes);
             });
         });
     }    
 
     procurarPorId(id) {
         return new Promise((resolve, reject) => {
-            this.pool.query('SELECT o.id, o.nome, o.lado, p.nome as papel FROM octogonais o JOIN papeis p ON o.id_papel = p.id WHERE e.id=?',
+            this.pool.query('SELECT o.id, o.nome, o.lado, p.nome as papel FROM suportes o JOIN papeis p ON o.id_papel = p.id WHERE e.id=?',
             [id], function (error, linhas, fields) {
                 if (error) {
                     return reject('Erro: ' + error.message);
                 }
     
-                let octogonais = linhas.map(linha => {
+                let suportes = linhas.map(linha => {
                     let { id, nome, lado, papel } = linha;
-                    return new Octogonal(id, nome, lado, papel); 
+                    return new Suporte(id, nome, lado, papel); 
                 });
     
-                resolve(octogonais[0]);
+                resolve(suportes[0]);
             });
         });
     }
 
-    inserir(octogonal) {
-        this.validar(octogonal);
-        octogonal.senha = bcrypt.hashSync(octogonal.senha, 10);
+    inserir(suporte) {
+        this.validar(suporte);
+        suporte.senha = bcrypt.hashSync(suporte.senha, 10);
         
         return new Promise((resolve, reject) => {
             if (!this.pool) {
                 reject('Erro: Conexão com o banco de dados não foi estabelecida.');
                 return;
             }
-            let sql = `INSERT INTO octogonais (nome, lado, senha, id_papel) VALUES (?, ?, ?, ?);`;
-            console.log({ sql }, octogonal);
+            let sql = `INSERT INTO suportes (nome, lado, senha, id_papel) VALUES (?, ?, ?, ?);`;
+            console.log({ sql }, suporte);
     
-            this.pool.query(sql, [octogonal.nome, octogonal.lado, octogonal.senha, 1], function (error, resultado, fields) {
+            this.pool.query(sql, [suporte.nome, suporte.lado, suporte.senha, 1], function (error, resultado, fields) {
                 if (error) {
                     reject('Erro: ' + error.message);
                 } else {
                     if (resultado.length > 0) {
                         let linha = resultado[0];
-                        if (bcrypt.compareSync(octogonal.senha, linha.senha)) {
+                        if (bcrypt.compareSync(suporte.senha, linha.senha)) {
                             const { nome, lado } = linha;
-                            resolve(new Octogonal(nome, lado));
+                            resolve(new suporte(nome, lado));
                         } else {
                             resolve(resultado.insertId);
                         }
@@ -73,16 +73,16 @@ class SuporteMysqlDao {
         });
     }
     
-    alterar(id, octogonal) {
-        this.validar(octogonal);
+    alterar(id, suporte) {
+        this.validar(suporte);
         return new Promise((resolve, reject) => {
-            let sql = 'UPDATE octogonais SET nome=?, lado=? WHERE id=?';
-            this.pool.query(sql, [octogonal.nome, octogonal.lado, id], function (error, resultado, fields) {
+            let sql = 'UPDATE suportes SET nome=?, lado=? WHERE id=?';
+            this.pool.query(sql, [suporte.nome, suporte.lado, id], function (error, resultado, fields) {
                 if (error) {
                     return reject('Erro: ' + error.message);
                 }
                 if (resultado.affectedRows > 0) {
-                    resolve(new Octogonal(id, octogonal.nome, octogonal.lado, octogonal.papel));
+                    resolve(new suporte(id, suporte.nome, suporte.lado, suporte.papel));
                 } else {
                     resolve(null);
                 }
@@ -92,7 +92,7 @@ class SuporteMysqlDao {
 
     apagar(id) {
         return new Promise((resolve, reject) => {
-            let sql = `DELETE FROM octogonais WHERE id=?;`;
+            let sql = `DELETE FROM suportes WHERE id=?;`;
             this.pool.query(sql, [id], function (error, resultado, fields) {
                 if (error) {
                     return reject('Erro: ' + error.message);
@@ -102,18 +102,18 @@ class SuporteMysqlDao {
         });
     }
 
-    validar(octogonal) {
-        if (!octogonal.nome) {
+    validar(suporte) {
+        if (!suporte.nome) {
             throw new Error('mensagem_nome_em_branco');
         }
-        if (octogonal.lado < 0) {
-            throw new Error('Lado do octogonal não pode ser menor que 0');
+        if (suporte.lado < 0) {
+            throw new Error('Lado do suporte não pode ser menor que 0');
         }
     }
     
     autenticar(nome, senha) {
         return new Promise((resolve, reject) => {
-            let sql = 'SELECT * FROM octogonais WHERE nome=?';
+            let sql = 'SELECT * FROM suportes WHERE nome=?';
             this.pool.query(sql, [nome], function (error, linhas, fields) {
                 if (error) {
                     return reject('Erro: ' + error.message);
@@ -122,7 +122,7 @@ class SuporteMysqlDao {
                     console.log('autenticar', senha, linha);
                     if (bcrypt.compareSync(senha, linha.senha)) {
                         let { id, nome, lado, papel } = linha;
-                        return resolve(new Octogonal(id, nome, lado, papel));
+                        return resolve(new Suporte(id, nome, lado, papel));
                     }
                 }
                 return resolve(null);

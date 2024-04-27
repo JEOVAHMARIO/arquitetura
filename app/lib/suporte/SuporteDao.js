@@ -3,26 +3,26 @@ const bcrypt = require('bcrypt');
 
 class SuporteDao {
     constructor() {
-        this.octogonais = [];
+        this.suportes = [];
     }
 
     listar() {
-        return this.octogonais;
+        return this.suportes;
     }
 
     inserir(suporte) {
         this.validar(suporte);
         suporte.senha = bcrypt.hashSync(suporte.senha, 10);
-        this.octogonais.push(suporte);
+        this.suportes.push(suporte);
     }
 
     alterar(id, suporte) {
         this.validar(suporte);
-        this.octogonais[id] = suporte;
+        this.suportes[id] = suporte;
     }
 
     apagar(id) {
-        this.octogonais.splice(id, 1);
+        this.suportes.splice(id, 1);
     }
 
     validar(suporte) {

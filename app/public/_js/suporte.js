@@ -17,7 +17,7 @@ async function calcularArea() {
         if (idPapel === 0 || isNaN(idPapel)) {
             await inserir(suporte);
         } else {
-            await editar(suporte, idPapel); 
+            await editar(suporte, idPapel);
         }
 
         exibirDadosFormulario(nome, lado, idPapel, senha);
