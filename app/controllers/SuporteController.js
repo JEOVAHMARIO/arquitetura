@@ -122,6 +122,17 @@ class SuporteController {
             res.status(400).json({ mensagem: 'Erro ao apagar octogonal.' });
         }
     }
+
+    async getSuporteDaRequisicao(req) {
+        let corpo = req.body;
+
+        let suporte = {
+            nome: corpo.nome,
+            lado: parseFloat(corpo.lado)
+        };
+        
+        return suporte;
+    }
 }
 
 module.exports = SuporteController;
