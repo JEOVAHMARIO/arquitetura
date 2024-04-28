@@ -20,6 +20,8 @@ const SuporteController = require('./controllers/SuporteController');
 const AutorController = require('./controllers/AutorController');
 const AuthController = require('./controllers/AuthController');
 const SuporteDao = require('./lib/suporte/SuporteDao');
+const UsuariosSequelizeDao = require('./lib/projeto/UsuariosSequelizeDao');
+const UsuariosController = require('./controllers/UsuariosController');
 
 const PORT = 3000;
 
@@ -35,6 +37,8 @@ const sequelize = new Sequelize(
 
 app.set('view engine', 'ejs');
 
+let usuariosDao = new UsuariosSequelizeDao(sequelize);
+let usuariosController = new UsuariosController(usuariosDao);
 let suporteDao = new SuporteSequelizeDao(sequelize);
 let suporteController = new SuporteController(suporteDao);
 let autorController = new AutorController();
@@ -87,6 +91,56 @@ app.get('/login', (req, res) => {
 app.post('/logar', (req, res) => {
   authController.logar(req, res);
 });
+
+app.get('/lista', async (req, res) => {
+  let suportes = await suporteDao.listar();
+  if (req.headers.accept == 'application/json') {
+    res.json(estudantes);
+  }
+  else {
+    res.render('lista', {suportes});
+  }
+});
+
+app.get('/editar', (req, res) => {
+  pool.query('SELECT suportes.id, suportes.nome, suportes.lado, suportes.resumo FROM suportes JOIN categorias ON suportes.id_categoria=categorias.id ORDER BY nome, lado', [], function(erro, listagem) {
+    if(erro){
+      res.status(200).send(erro)
+    }
+    res.render('editar', {suportes: listagem});
+  });
+})
+
+app.post('/editar/:id', (req, res) => {
+  pool.query('UPDATE suportes SET titulo=?, autor=?, id_categoria=(SELECT id FROM categorias WHERE nome =?), resumo=? WHERE id=?', [req.body.titulo, req.body.autor, req.body.categoria, req.body.resumo, req.params.id], 
+
+  function(erro) {
+    if(erro){
+      res.status(200).send(erro)
+    } 
+    res.redirect('/index');     
+  });
+})
+
+app.get('/excluir', (req, res) => {
+  pool.query('SELECT suportes.id, suportes.nome, suportes.lado, suportes.resumo FROM suportes JOIN categorias ON suportes.id_categoria=categorias.id ORDER BY nome, lado', [], function(erro, listagem) {
+    if(erro){
+      res.status(200).send(erro)
+    }
+    res.render('excluir', {suportes: listagem});
+  });
+})
+
+app.delete('/excluir/:id', (req, res) => {
+  pool.query('DELETE FROM suportes WHERE id = ?', [req.params.id], 
+  function(erro) {
+    if(erro){
+      res.status(200).send(erro)
+    }else{
+      res.status(200).send('OK');
+    }   
+  });
+})
 
 app.get('*', (req, res, next) => {
   res.status(404).send('Nao encontrado')

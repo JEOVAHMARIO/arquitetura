@@ -1,100 +1,137 @@
-const Usuario = require('./../lib/suporte/usuario');
-const utils = require('../lib/utils');
+const Usuario = require('./../lib/projeto/Usuario');
+const express = require('express');
 
 class UsuariosController {
     constructor(usuariosDao) {
-        this.usuariosDao = usuariosDao;
-    }
-    index(req, res) {
-        utils.renderizarEjs(res, './views/index.ejs');
+        this.usuariosDao = usuariosDao;      
     }
 
-    async calcularArea(req, res){               
-        let corpoTexto ='';
-        req.on('data', function (pedaco) {
-            corpoTexto += pedaco;
-        });
-        req.on('end', () => {
-            let propriedades = corpoTexto.split('&');
-            let query = {};
-            for (let propriedade of propriedades) {
-                let [variavel, valor] = propriedade.split('=');
-                query[variavel] = valor;
+    getRouter() {
+        const rotas = express.Router();
+        
+        rotas.get('/', async (req, res) => {
+            try {
+                let usuarios = await this.listar(req, res);
+                res.render('usuarios', {usuarios: usuarios});        
+            } catch (error) {
+                console.error('Erro ao listar usuários:', error);
+                res.status(500).json({ error: 'Erro interno do servidor' });
             }
-            let octogonal = new Octogonal();
-            Octogonal.nome = query.nome;
-            octogonal.lado = parseFloat(query.lado);
-                       
-            utils.renderizarEjs(res, './views/area.ejs', octogonal);
-        })
+        });
+
+        rotas.delete('/:id', async (req, res) => {
+            try {
+                await this.apagar(req, res);
+                res.json({ mensagem: 'Usuário apagado com sucesso' });
+            } catch (error) {
+                console.error('Erro ao apagar usuário:', error);
+                res.status(500).json({ error: 'Erro interno do servidor' });
+            }
+        });
+
+        rotas.get('/cadastro', (req, res) => {
+            res.render('cadastroUsuarios',{usuario:{}});
+        });
+
+        rotas.post('/cadastro', async (req, res) => {
+            try {
+                await this.inserir(req, res);
+                res.redirect('/');
+            } catch (error) {
+                console.error('Erro ao inserir usuário:', error);
+                res.status(500).json({ error: 'Erro interno do servidor' });
+            }
+        });
+
+        rotas.get('/editar', async (req, res) => {
+            try {
+                let usuarios = await this.listar(req, res);
+                res.render('editarUsuarios',{usuarios:usuarios});
+            } catch (error) {
+                console.error('Erro ao listar usuários:', error);
+                res.status(500).json({ error: 'Erro interno do servidor' });
+            }
+        });
+
+        rotas.get('/cadastro/:id', async (req, res) => {
+            try {
+                let id = req.params.id;
+                let usuario = await this.getUser(id);
+                res.render('cadastroUsuarios',{usuario:usuario});
+            } catch (error) {
+                console.error('Erro ao buscar usuário por ID:', error);
+                res.status(500).json({ error: 'Erro interno do servidor' });
+            }
+        });
+
+        rotas.put('/cadastro/:id', async (req, res) => {
+            try {
+                await this.alterar(req, res);
+                res.json({ mensagem: 'Usuário alterado com sucesso' });
+            } catch (error) {
+                console.error('Erro ao alterar usuário:', error);
+                res.status(500).json({ error: 'Erro interno do servidor' });
+            }
+        });
+
+        rotas.get('/excluir', async (req, res) => {
+            try {
+                let usuarios = await this.listar(req, res);
+                res.render('excluirUsuarios',{usuarios:usuarios});
+            } catch (error) {
+                console.error('Erro ao listar usuários:', error);
+                res.status(500).json({ error: 'Erro interno do servidor' });
+            }
+        });
+
+        return rotas;
     }
 
-    listar(req, res) {
-        let usuarios = this.usuariosDao.listar();
+    async getUser(id){
+        let usuario = await Usuario.findOne({
+            raw: true,
+            where: {
+                id: id,
+            },   
+        });
+        return usuario;
+    }
 
+    async listar(req, res) {
+        let usuarios = await this.usuariosDao.listar();
         let dados = usuarios.map(usuario => {
             return {
-                ...usuario
+                ...usuario.dataValues
             };
-        })
-
-        utils.renderizarJSON(res, dados);
+        });
+        return dados;
     }
     
     async inserir(req, res) {
         let usuario = await this.getUsuarioDaRequisicao(req);
-        try {
-            this.usuariosDao.inserir(usuario);
-            utils.renderizarJSON(res, {
-                usuario: {
-                    ...usuario
-                },
-                mensagem: 'mensagem_usuario_cadastrado'
-            });
-        } catch (e) {
-            utils.renderizarJSON(res, {
-                mensagem: e.message
-            }, 400);
-        }
+        let id = await this.usuariosDao.inserir(usuario);
+        usuario.id = id;
+        return usuario;
     }
 
     async alterar(req, res) {
-        let usuario = await this.getUsuariosDaRequisicao(req);
-        let [ url, queryString ] = req.url.split('?');
-        let urlList = url.split('/');
-        url = urlList[1];
-        let id = urlList[2];
-        try {
-            this.usuariosDao.alterar(id, usuario);
-            utils.renderizarJSON(res, {
-                mensagem: 'mensagem_usuario_alterado'
-            });
-        } catch (e) {
-            utils.renderizarJSON(res, {
-                mensagem: e.message
-            }, 400);
-        }
+        let usuario = await this.getUsuarioDaRequisicao(req);
+        let id = req.params.id;
+        await this.usuariosDao.alterar(id, usuario);
     }
     
-    apagar(req, res) {
-        let [ url, queryString ] = req.url.split('?');
-        let urlList = url.split('/');
-        url = urlList[1];
-        let id = urlList[2];
-        this.usuariosDao.apagar(id);
-        utils.renderizarJSON(res, {
-            mensagem: 'mensagem_usuario_apagado',
-            id: id
-        });
+    async apagar(req, res) {
+        let id = req.params.id;
+        await this.usuariosDao.apagar(id);
     }
 
     async getUsuarioDaRequisicao(req) {
-        let corpo = await utils.getCorpo(req);
-        let usuario = new Usuario(
-            corpo.nome,
-            corpo.senha,
-            corpo.papel
-        );
+        let corpo = req.body;
+        let usuario = Usuario.build({
+            nome: corpo.nome,
+            senha: corpo.senha,
+            papel: corpo.papel
+        });
         return usuario;
     }
 }
